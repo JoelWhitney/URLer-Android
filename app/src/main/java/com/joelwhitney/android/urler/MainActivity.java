@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -18,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int BARCODE_READER_REQUEST_CODE = 0;
 
     private TextView mResultTextView;
+    private Button mScanBarcodeButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +27,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mResultTextView = findViewById(R.id.result_textview);
-        mResultTextView.setOnClickListener(new View.OnClickListener() {
+        mScanBarcodeButton = findViewById(R.id.scan_barcode_button);
+
+        mScanBarcodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), ScanActivity.class);
+                Log.i(TAG,"button clicked");
+                Intent intent = ScanActivity.newIntent(MainActivity.this);
                 startActivityForResult(intent, BARCODE_READER_REQUEST_CODE);
             }
         });
@@ -41,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 if (data != null) {
                     Barcode barcode = data.getParcelableExtra(ScanActivity.BarcodeObject);
                     //val p = barcode.cornerPoints
-                    mResultTextView.text = barcode.displayValue;
+                    mResultTextView.setText(barcode.displayValue);
                 } else
                     mResultTextView.setText(R.string.no_barcode_captured);
             } else

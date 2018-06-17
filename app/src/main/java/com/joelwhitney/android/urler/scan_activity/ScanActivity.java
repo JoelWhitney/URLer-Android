@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -23,13 +24,14 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.CommonStatusCodes;
-import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
-import com.joelwhitney.urler.R;
-import com.joelwhitney.urler.camera.CameraSourcePreview;
+import com.joelwhitney.android.urler.R;
+import com.joelwhitney.android.urler.camera_source.CameraSourcePreview;
+import com.joelwhitney.android.urler.camera_source.CameraSource;
+//import com.joelwhitney.android.urler.ui_extras.ResultAlertDialog;
 
 
 import java.io.IOException;
@@ -51,13 +53,18 @@ public final class ScanActivity extends AppCompatActivity
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
 
+    public static Intent newIntent(Context packageContext) {
+        Intent intent = new Intent(packageContext, ScanActivity.class);
+        return intent;
+    }
+
     /**
      * Initializes the UI and creates the detector pipeline.
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.);
+        setContentView(R.layout.activity_scan);
 
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
 
@@ -75,14 +82,30 @@ public final class ScanActivity extends AppCompatActivity
     }
 
     @Override
-    public void onDetectedQrCode(Barcode barcode) {
+    public void onDetectedQrCode(final Barcode barcode) {
         if (barcode != null) {
-            Intent intent = new Intent();
-            intent.putExtra(BarcodeObject, barcode);
-            setResult(CommonStatusCodes.SUCCESS, intent);
-            finish();
+//            Intent intent = new Intent();
+//            intent.putExtra(BarcodeObject, barcode);
+//            setResult(CommonStatusCodes.SUCCESS, intent);
+//            finish();
+
+            new Thread() {
+                public void run() {
+                    ScanActivity.this.runOnUiThread(new Runnable() {
+                        public void run() {
+                            Toast.makeText(getBaseContext(), barcode.displayValue, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    stopCameraSource();
+                }
+            }.start();
         }
     }
+
+//    private void presentAlertDialog() {
+//        String url = "http://";
+//        AlertDialog alert = ResultAlertDialog.create(ScanActivity.this, url);
+//    }
 
     // Handles the requesting of the camera permission.
     private void requestCameraPermission() {
@@ -153,8 +176,7 @@ public final class ScanActivity extends AppCompatActivity
 
         // make sure that auto focus is an available option
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            builder = builder.setFocusMode(
-                    autoFocus ? Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE : null);
+            builder = builder.setFocusMode(autoFocus ? Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE : null);
         }
 
         mCameraSource = builder
@@ -265,5 +287,13 @@ public final class ScanActivity extends AppCompatActivity
                 mCameraSource = null;
             }
         }
+    }
+
+    private void stopCameraSource() {
+        //mCameraSource.stop();
+        mPreview.stop();
+//        if (mPreview.isActivated()) {
+//            mPreview.stop();
+//        }
     }
 }
