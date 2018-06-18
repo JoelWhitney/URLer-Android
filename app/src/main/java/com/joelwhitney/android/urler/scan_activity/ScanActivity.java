@@ -19,6 +19,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -35,6 +38,8 @@ import com.joelwhitney.android.urler.camera_source.CameraSource;
 
 
 import java.io.IOException;
+
+import static java.security.AccessController.getContext;
 
 public final class ScanActivity extends AppCompatActivity
         implements BarcodeTracker.BarcodeGraphicTrackerCallback {
@@ -81,6 +86,23 @@ public final class ScanActivity extends AppCompatActivity
         }
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        new MenuInflater(this).inflate(R.menu.fragment_scan_view, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.refresh:
+                startCameraSource();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
     @Override
     public void onDetectedQrCode(final Barcode barcode) {
         if (barcode != null) {
